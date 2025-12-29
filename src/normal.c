@@ -77,6 +77,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		"grid",
 		"hint",
 		"hint2",
+		"sift",
 		"hist_back",
 		"hist_forward",
 		"history",
@@ -202,10 +203,11 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			goto exit;
 		} else if (config_input_match(ev, "exit") ||
 			   config_input_match(ev, "grid") ||
-			   config_input_match(ev, "screen") ||
-			   config_input_match(ev, "history") ||
-			   config_input_match(ev, "hint2") ||
-			   config_input_match(ev, "hint")) {
+		   config_input_match(ev, "screen") ||
+		   config_input_match(ev, "history") ||
+		   config_input_match(ev, "hint2") ||
+		   config_input_match(ev, "sift") ||
+		   config_input_match(ev, "hint")) {
 			goto exit;
 		} else if (config_input_match(ev, "print")) {
 			printf("%d %d %s\n", mx, my, input_event_tostr(ev));

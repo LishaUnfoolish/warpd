@@ -1,0 +1,42 @@
+# warpd配置文件
+# 优化左右手交替操作
+
+# 重复移动事件的间隔（毫秒）
+repeat_interval: 10
+
+# ===== Hint字符集 - 左右手交替优化 =====
+# 
+# 布局策略：前半部分=左手，后半部分=右手
+# 这样hint的两个字符大概率是左右手交替，输入速度最快！
+#
+# 【左手字符】(按home row → 上排 → 下排 → 数字顺序)
+#   asdfg  - 左手主键位
+#   qwert  - 左手上排
+#   zxcvb  - 左手下排  
+#   12345  - 左手数字
+#   []'    - 左手符号
+#
+# 【右手字符】(按home row → 上排 → 下排 → 数字顺序)
+#   hjkl;  - 右手主键位
+#   yuiop  - 右手上排
+#   nm,./  - 右手下排
+#   67890- - 右手数字
+#
+# 效果：ah/aj/gj等常见hint都是左右手交替，如同打字般流畅！
+# 总共45字符 = 2025个hint点
+hint_chars: asdfgqwertzxcvb12345[]'hjkl;yuiopnm,./67890-
+
+# hint大小
+hint_size: 12
+
+# 其他hint相关配置
+hint_bgcolor: #1c1c1e
+hint_fgcolor: #a1aba7
+hint_border_radius: 2
+
+# 鼠标速度配置（可选）
+# speed: 1
+# max_speed: 1600
+# acceleration: 700
+# decelerator_speed: 50
+# accelerator_acceleration: 2900

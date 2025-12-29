@@ -24,14 +24,16 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 		case MODE_NORMAL:
 			ev = normal_mode(ev, oneshot);
 
-			if (config_input_match(ev, "history"))
-				mode = MODE_HISTORY;
-			else if (config_input_match(ev, "hint"))
-				mode = MODE_HINT;
-			else if (config_input_match(ev, "hint2"))
-				mode = MODE_HINT2;
-			else if (config_input_match(ev, "grid"))
-				mode = MODE_GRID;
+		if (config_input_match(ev, "history"))
+			mode = MODE_HISTORY;
+		else if (config_input_match(ev, "hint"))
+			mode = MODE_HINT;
+		else if (config_input_match(ev, "hint2"))
+			mode = MODE_HINT2;
+		else if (config_input_match(ev, "sift"))
+			mode = MODE_SIFT;
+		else if (config_input_match(ev, "grid"))
+			mode = MODE_GRID;
 			else if (config_input_match(ev, "screen"))
 				mode = MODE_SCREEN_SELECTION;
 			else if ((rc = config_input_match(ev, "oneshot_buttons")) || !ev) {
@@ -43,15 +45,22 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 			}
 
 			break;
-		case MODE_HINT2:
-		case MODE_HINT:
-			if (full_hint_mode(mode == MODE_HINT2) < 0)
-				goto exit;
+	case MODE_HINT2:
+	case MODE_HINT:
+		if (full_hint_mode(mode == MODE_HINT2) < 0)
+			goto exit;
 
-			ev = NULL;
-			mode = MODE_NORMAL;
-			break;
-		case MODE_GRID:
+		ev = NULL;
+		mode = MODE_NORMAL;
+		break;
+	case MODE_SIFT:
+		if (sift_mode() < 0)
+			goto exit;
+
+		ev = NULL;
+		mode = MODE_NORMAL;
+		break;
+	case MODE_GRID:
 			ev = grid_mode();
 			if (config_input_match(ev, "grid_exit"))
 				ev = NULL;

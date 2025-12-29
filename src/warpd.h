@@ -58,6 +58,7 @@ enum {
 	MODE_HISTORY,
 	MODE_HINT,
 	MODE_HINT2,
+	MODE_SIFT,
 	MODE_GRID,
 	MODE_NORMAL,
 	MODE_HINTSPEC,
@@ -92,6 +93,7 @@ extern char last_selected_hint[32];
 int hintspec_mode();
 int history_hint_mode();
 int full_hint_mode(int second_pass);
+int sift_mode();
 void screen_selection_mode();
 struct input_event *grid_mode();
 struct input_event *normal_mode(struct input_event *start_ev, int oneshot);

@@ -39,6 +39,7 @@ static struct {
 	{ "history", ";", "Activate hint history mode while in normal mode.", OPT_KEY },
 	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?).", OPT_KEY },
 	{ "hint2", "X", "Activate two pass hint mode.", OPT_KEY },
+	{ "sift", "z", "Activate direct sift mode (single character precise positioning).", OPT_KEY },
 	{ "grid", "g", "Activate (g)rid mode while in normal mode.", OPT_KEY },
 	{ "screen", "s", "Activate (s)creen selection while in normal mode.", OPT_KEY },
 
@@ -59,7 +60,7 @@ static struct {
 
 	{ "cursor_size", "7", "The height of the pointer in normal mode.", OPT_INT },
 	{ "repeat_interval", "20", "The number of milliseconds before repeating a movement event.", OPT_INT },
-	{ "speed", "220", "Pointer speed in pixels/second.", OPT_INT },
+	{ "speed", "20", "Pointer speed in pixels/second.", OPT_INT },
 	{ "max_speed", "1600", "The maximum pointer speed.", OPT_INT },
 	{ "decelerator_speed", "50", "Pointer speed while decelerator is depressed.", OPT_INT },
 	{ "acceleration", "700", "Pointer acceleration in pixels/second^2.", OPT_INT },

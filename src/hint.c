@@ -314,3 +314,14 @@ int history_hint_mode()
 
 	return hint_selection(scr, hints, n);
 }
+
+int sift_mode()
+{
+	int mx, my;
+	screen_t scr;
+
+	platform->mouse_get_position(&scr, &mx, &my);
+	hist_add(mx, my);
+
+	return sift();
+}
