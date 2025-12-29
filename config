@@ -1,33 +1,38 @@
 # warpd配置文件
-# 新增sift模式：直接精确定位（1个字符）
+# 优化hint和sift的字符布局
 
 # 重复移动事件的间隔（毫秒）
 repeat_interval: 10
 
 # ===== 全局激活键配置 =====
-# Super+Alt+x → hint1（快速两字符定位）
 hint_activation_key: A-M-x
-
-# Super+Alt+z → hint2（两字符+第二阶段）
 hint2_activation_key: A-M-z
 
 # ===== Normal模式下的快捷键 =====
-# x → hint1（快速定位）
 hint: x
-
-# z → sift（直接显示5×5网格，1个字符精确定位）
 sift: z
 
-# ===== Hint1配置（快速模式）=====
-hint_chars: asdfghjklqwertyuiopzxcvbnm
+# ===== Hint1配置（左右手交替优化）=====
+# 两字符组合，左右手分离优化
+hint_chars: asdfgqwertzxcvbhjklyuiopnm
 hint_size: 15
 hint_bgcolor: #1c1c1e
 hint_fgcolor: #a1aba7
 hint_border_radius: 3
 
-# ===== Sift模式配置（直接精确定位）=====
-# 5×5网格，25个精确点，只需1个字符！
-hint2_chars: asdfgqwertzxcvhjkl;yuiopnm
+# ===== Sift模式配置（网格位置直觉映射）=====
+# 5×5网格，按照键盘物理布局直觉映射
+# 网格布局（从上到下，每行从左到右）：
+#
+#   q w e r t    ← 网格第1行 = 键盘上排（左侧）
+#   a s d f g    ← 网格第2行 = 主键位（左侧）
+#   z x c v b    ← 网格第3行 = 下排（左侧）
+#   y u i o p    ← 网格第4行 = 上排（右侧）
+#   h j k l m    ← 网格第5行 = 主键位（右侧）
+#
+# 直觉性：网格上方=键盘上方，网格左侧=键盘左侧
+hint2_chars: qwertasdfgzxcvbyuiophjklm
+
 hint2_grid_size: 5
 hint2_size: 12
 hint2_gap_size: 2
