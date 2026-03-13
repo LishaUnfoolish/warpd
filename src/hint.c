@@ -14,6 +14,40 @@ static size_t nr_matched;
 
 char last_selected_hint[32];
 
+/* Multi-screen state for full_hint_mode */
+static screen_t all_screens[MAX_SCREENS];
+static size_t nr_all_screens;
+
+static void filter_multiscreen(const char *s)
+{
+	size_t i, si;
+
+	nr_matched = 0;
+	for (i = 0; i < nr_hints; i++) {
+		if (strstr(hints[i].label, s) == hints[i].label)
+			matched[nr_matched++] = hints[i];
+	}
+
+	for (si = 0; si < nr_all_screens; si++)
+		platform->screen_clear(all_screens[si]);
+
+	/* Draw matched hints on their respective screens */
+	for (si = 0; si < nr_all_screens; si++) {
+		struct hint scr_hints[MAX_HINTS];
+		size_t scr_n = 0;
+
+		for (i = 0; i < nr_matched; i++) {
+			if (matched[i].scr == all_screens[si])
+				scr_hints[scr_n++] = matched[i];
+		}
+
+		if (scr_n > 0)
+			platform->hint_draw(all_screens[si], scr_hints, scr_n);
+	}
+
+	platform->commit();
+}
+
 static void filter(screen_t scr, const char *s)
 {
 	size_t i;
@@ -84,6 +118,64 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 			hint->label[0] = chars[i];
 			hint->label[1] = chars[j];
 			hint->label[2] = 0;
+			hint->scr = NULL;
+
+			y += rowgap + h;
+		}
+
+		y = y_offset;
+		x += colgap + w;
+	}
+
+	return n;
+}
+
+/*
+ * Generate hints for a single screen with a numeric prefix.
+ * E.g. screen_idx=0 produces labels like "1aa", "1ab", etc.
+ */
+static size_t generate_screen_hints(screen_t scr, int screen_idx, struct hint *hints)
+{
+	int sw, sh;
+	int w, h;
+	int i, j;
+	size_t n = 0;
+
+	const char *chars = config_get("hint_chars");
+	get_hint_size(scr, &w, &h);
+	platform->screen_get_dimensions(scr, &sw, &sh);
+
+	const int nr = strlen(chars);
+	const int nc = strlen(chars);
+
+	const int colgap = sw / nc - w;
+	const int rowgap = sh / nr - h;
+
+	const int x_offset = (sw - nc * w - (nc - 1) * colgap) / 2;
+	const int y_offset = (sh - nr * h - (nr - 1) * rowgap) / 2;
+
+	int x = x_offset;
+	int y = y_offset;
+
+	get_hint_size(scr, &w, &h);
+
+	char prefix = '1' + screen_idx;
+
+	for (i = 0; i < nc; i++) {
+		for (j = 0; j < nr; j++) {
+			struct hint *hint = &hints[n++];
+
+			hint->x = x;
+			hint->y = y;
+
+			hint->w = w;
+			hint->h = h;
+
+			hint->label[0] = prefix;
+			hint->label[1] = chars[i];
+			hint->label[2] = chars[j];
+			hint->label[3] = 0;
+			hint->scr = scr;
 
 			y += rowgap + h;
 		}
@@ -172,6 +264,94 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 	platform->input_ungrab_keyboard();
 	platform->screen_clear(scr);
+	platform->mouse_show();
+
+	platform->commit();
+	return rc;
+}
+
+/*
+ * Multi-screen hint selection: hints span all screens,
+ * each hint knows which screen it belongs to via hint->scr.
+ */
+static int hint_selection_multiscreen(struct hint *_hints, size_t _nr_hints)
+{
+	size_t si;
+
+	hints = _hints;
+	nr_hints = _nr_hints;
+
+	filter_multiscreen("");
+
+	int rc = 0;
+	char buf[32] = {0};
+	platform->input_grab_keyboard();
+
+	platform->mouse_hide();
+
+	const char *keys[] = {
+		"hint_exit",
+		"hint_undo_all",
+		"hint_undo",
+	};
+
+	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
+
+	while (1) {
+		struct input_event *ev;
+		ssize_t len;
+
+		ev = platform->input_next_event(0);
+
+		if (!ev->pressed)
+			continue;
+
+		len = strlen(buf);
+
+		if (config_input_match(ev, "hint_exit")) {
+			rc = -1;
+			break;
+		} else if (config_input_match(ev, "hint_undo_all")) {
+			buf[0] = 0;
+		} else if (config_input_match(ev, "hint_undo")) {
+			if (len)
+				buf[len - 1] = 0;
+		} else {
+			const char *name = input_event_tostr(ev);
+
+			if (!name || name[1])
+				continue;
+
+			buf[len++] = name[0];
+		}
+
+		filter_multiscreen(buf);
+
+		if (nr_matched == 1) {
+			int nx, ny;
+			struct hint *h = &matched[0];
+			screen_t target_scr = h->scr;
+
+			for (si = 0; si < nr_all_screens; si++)
+				platform->screen_clear(all_screens[si]);
+
+			nx = h->x + h->w / 2;
+			ny = h->y + h->h / 2;
+
+			platform->mouse_move(target_scr, nx+1, ny+1);
+			platform->mouse_move(target_scr, nx, ny);
+			strcpy(last_selected_hint, buf);
+			break;
+		} else if (nr_matched == 0) {
+			break;
+		}
+	}
+
+	platform->input_ungrab_keyboard();
+
+	for (si = 0; si < nr_all_screens; si++)
+		platform->screen_clear(all_screens[si]);
+
 	platform->mouse_show();
 
 	platform->commit();
@@ -270,14 +450,32 @@ int full_hint_mode(int second_pass)
 	int mx, my;
 	screen_t scr;
 	struct hint hints[MAX_HINTS];
+	size_t n_screens;
 
 	platform->mouse_get_position(&scr, &mx, &my);
 	hist_add(mx, my);
 
-	nr_hints = generate_fullscreen_hints(scr, hints);
+	platform->screen_list(all_screens, &n_screens);
+	nr_all_screens = n_screens;
 
-	if (hint_selection(scr, hints, nr_hints))
-		return -1;
+	if (n_screens > 1) {
+		size_t si;
+		nr_hints = 0;
+
+		for (si = 0; si < n_screens; si++) {
+			nr_hints += generate_screen_hints(
+				all_screens[si], si,
+				hints + nr_hints);
+		}
+
+		if (hint_selection_multiscreen(hints, nr_hints))
+			return -1;
+	} else {
+		nr_hints = generate_fullscreen_hints(scr, hints);
+
+		if (hint_selection(scr, hints, nr_hints))
+			return -1;
+	}
 
 	if (second_pass)
 		return sift();

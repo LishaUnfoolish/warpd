@@ -37,6 +37,8 @@ struct hint {
 	int h;
 
 	char label[16];
+
+	struct screen *scr;
 };
 
 struct screen;
