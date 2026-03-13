@@ -459,13 +459,25 @@ int full_hint_mode(int second_pass)
 	nr_all_screens = n_screens;
 
 	if (n_screens > 1) {
-		size_t si;
+		size_t si, k;
+		int prefix_idx = 0;
 		nr_hints = 0;
 
 		for (si = 0; si < n_screens; si++) {
-			nr_hints += generate_screen_hints(
-				all_screens[si], si,
-				hints + nr_hints);
+			if (all_screens[si] == scr) {
+				/* Current screen: no prefix */
+				size_t start = nr_hints;
+				nr_hints += generate_fullscreen_hints(
+					all_screens[si], hints + nr_hints);
+				for (k = start; k < nr_hints; k++)
+					hints[k].scr = all_screens[si];
+			} else {
+				/* Other screens: numeric prefix */
+				nr_hints += generate_screen_hints(
+					all_screens[si], prefix_idx,
+					hints + nr_hints);
+				prefix_idx++;
+			}
 		}
 
 		if (hint_selection_multiscreen(hints, nr_hints))
