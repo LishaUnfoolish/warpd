@@ -1,0 +1,42 @@
+# warpd配置文件
+# hint字符集优化为左右交替排列
+
+# 重复移动事件的间隔（毫秒）
+repeat_interval: 10
+
+# ===== 全局激活键配置 =====
+hint_activation_key: A-M-x
+hint2_activation_key: A-M-z
+
+# ===== Normal模式下的快捷键 =====
+hint: x
+sift: z
+
+# ===== Hint1配置（左右交替优先排列）=====
+# 采用左右交替排列，让最常用的hint优先交替
+# 排列原则：左(home) 右(home) 左(home) 右(home)...
+#
+# 字符顺序（左右交替）：
+#   a(左) h(右) s(左) j(右) d(左) k(右) f(左) l(右) g(左) y(右)
+#   q(左) u(右) w(左) i(右) e(左) o(右) r(左) p(右) t(左) n(右)
+#   z(左) m(右) x(左) c(左) v(左) b(左)
+#
+# 最常用的hint (前4个字符的组合)：
+#   aa(左左) ah(左右)✓ as(左左) aj(左右)✓
+#   ha(右左)✓ hh(右右) hs(右左)✓ hj(右右)
+#   sa(左左) sh(左右)✓ ss(左左) sj(左右)✓
+#   ja(右左)✓ jh(右右) js(右左)✓ jj(右右)
+#
+# 交替率：约50% (比之前稍好，因为首字符优先交替)
+hint_chars: ahsjdkflgyquwieorptnzmxcvb
+
+hint_size: 15
+hint_bgcolor: #1c1c1e
+hint_fgcolor: #a1aba7
+hint_border_radius: 3
+
+# ===== Sift模式配置（网格位置映射）=====
+hint2_chars: qwertasdfgzxcvbyuiophjklm
+hint2_grid_size: 5
+hint2_size: 12
+hint2_gap_size: 2
